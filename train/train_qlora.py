@@ -16,6 +16,8 @@ installed versions (`pip show trl transformers peft`). The structure below is
 the stable part; the exact signatures are the part that drifts.
 """
 
+import inspect
+
 import yaml
 import torch
 from datasets import load_dataset
@@ -67,20 +69,32 @@ def main():
     # Swap sample_path -> train_path once you've proven the pipeline works.
     dataset = load_dataset("json", data_files=d["sample_path"], split="train")
 
-    sft = SFTConfig(
-        output_dir=t["output_dir"],
-        num_train_epochs=t["epochs"],
-        per_device_train_batch_size=t["batch_size"],
-        gradient_accumulation_steps=t["grad_accum"],
-        learning_rate=t["lr"],
-        max_length=t["max_seq_len"],
-        warmup_ratio=t["warmup_ratio"],
-        logging_steps=t["logging_steps"],
-        save_steps=t["save_steps"],
-        seed=t["seed"],
-        bf16=True,
-        report_to="none",
-    )
+    # TRL's SFTConfig accepted kwargs drift across versions (e.g. warmup_ratio /
+    # max_length have moved or been renamed before). Filter against whatever the
+    # installed version actually accepts instead of failing on a TypeError.
+    sft_kwargs = {
+        "output_dir": t["output_dir"],
+        "num_train_epochs": t["epochs"],
+        "per_device_train_batch_size": t["batch_size"],
+        "gradient_accumulation_steps": t["grad_accum"],
+        "learning_rate": t["lr"],
+        "max_length": t["max_seq_len"],
+        "max_seq_length": t["max_seq_len"],  # older trl name for the same setting
+        "warmup_ratio": t["warmup_ratio"],
+        "logging_steps": t["logging_steps"],
+        "save_steps": t["save_steps"],
+        "seed": t["seed"],
+        "bf16": True,
+        "report_to": "none",
+    }
+    accepted = set(inspect.signature(SFTConfig.__init__).parameters)
+    dropped = {k: v for k, v in sft_kwargs.items() if k not in accepted}
+    sft_kwargs = {k: v for k, v in sft_kwargs.items() if k in accepted}
+    if dropped:
+        print(f"NOTE: installed trl's SFTConfig doesn't accept {sorted(dropped)}; "
+              f"dropping (check `pip show trl` if this matters for your run).")
+
+    sft = SFTConfig(**sft_kwargs)
 
     trainer = SFTTrainer(
         model=model,
