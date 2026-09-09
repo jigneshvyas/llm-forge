@@ -1,0 +1,13 @@
+# [COLAB / GPU] The training + export stack. Install in the Colab notebook.
+# Versions move fast — if something breaks, have Claude Code reconcile against
+# what's actually installed (`pip show trl transformers peft bitsandbytes`).
+torch
+transformers>=4.44
+datasets
+accelerate
+peft>=0.12
+trl>=0.11
+bitsandbytes
+pyyaml
+sentencepiece
+protobuf

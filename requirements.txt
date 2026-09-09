@@ -1,0 +1,4 @@
+# [LOCAL] Lightweight deps for prep + eval on your machine. No GPU stack here.
+pyyaml>=6.0
+# eval/compare.py uses only the stdlib (urllib), so nothing else is required
+# locally. Ollama itself is installed separately (https://ollama.com/download).

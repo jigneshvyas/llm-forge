@@ -1,0 +1,13 @@
+# Never commit weights, adapters, or GGUFs — they're big and regenerable.
+artifacts/
+llama.cpp/
+*.gguf
+*.safetensors
+data/raw/*
+!data/raw/.gitkeep
+data/train.jsonl
+data/eval.jsonl
+__pycache__/
+*.pyc
+.venv/
+.ipynb_checkpoints/

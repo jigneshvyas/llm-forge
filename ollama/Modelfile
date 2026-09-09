@@ -1,0 +1,32 @@
+# [RUNS: LOCAL — this is Ollama's recipe]
+#
+# Points Ollama at your downloaded GGUF and declares how to talk to it.
+# Place your quantized model.gguf next to this file, then run import.sh.
+#
+# NOTE: the TEMPLATE below is for Qwen2.5-style chat models (<|im_start|> format).
+# If you changed base_id in config.yaml to a different family (e.g. Llama 3.2),
+# the template and stop tokens differ — ask Claude Code to swap in the matching
+# one, or copy it from `ollama show --modelfile <official-base-model>`.
+
+FROM ./model.gguf
+
+# --- Chat template: how prompts get wrapped before hitting the model ---------
+TEMPLATE """{{ if .System }}<|im_start|>system
+{{ .System }}<|im_end|>
+{{ end }}{{ if .Prompt }}<|im_start|>user
+{{ .Prompt }}<|im_end|>
+{{ end }}<|im_start|>assistant
+{{ .Response }}<|im_end|>
+"""
+
+# --- Default system prompt (should match what you trained with) --------------
+SYSTEM """You are a concise, accurate assistant."""
+
+# --- Stop tokens: where generation should halt -------------------------------
+PARAMETER stop "<|im_start|>"
+PARAMETER stop "<|im_end|>"
+
+# --- Sampling defaults -------------------------------------------------------
+PARAMETER temperature 0.7
+PARAMETER top_p 0.9
+PARAMETER num_ctx 4096
