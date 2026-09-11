@@ -39,8 +39,12 @@ def ensure_llama_cpp(root=Path("llama.cpp")):
     build = root / "build"
     if not (build / "bin" / "llama-quantize").exists():
         run(["cmake", "-B", str(build), "-S", str(root)])
+        # Bare "-j" spawns unbounded parallel compile jobs (not capped to CPU
+        # count), which OOM-kills cc1plus on Colab's limited RAM when it hits
+        # heavy single-TU files like vendor/cpp-httplib's httplib.cpp (a hard
+        # dependency of llama.cpp's "common" lib, pulled in even for quantize).
         run(["cmake", "--build", str(build), "--config", "Release",
-             "-j", "--target", "llama-quantize"])
+             "-j", "2", "--target", "llama-quantize"])
     # Install python deps the converter needs.
     run([sys.executable, "-m", "pip", "install", "-q", "-r",
          str(root / "requirements.txt")])

@@ -8,6 +8,10 @@ accelerate
 peft>=0.12
 trl>=0.11
 bitsandbytes
+# Not used directly, but Colab preinstalls an old torchao that recent peft
+# versions hard-reject (ImportError) during PeftModel.from_pretrained's LoRA
+# dispatch, even though this pipeline never touches torchao quantization.
+torchao>=0.16.0
 pyyaml
 sentencepiece
 protobuf
